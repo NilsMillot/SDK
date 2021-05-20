@@ -1,5 +1,6 @@
 <?php
 const CLIENT_ID = "client_60a3778e70ef02.05413444";
+const CLIENT_FBID = "" // Client de FB
 const CLIENT_SECRET = "cd989e9a4b572963e23fe39dc14c22bbceda0e60";
 const STATE = "fdzefzefze";
 function handleLogin()
@@ -10,6 +11,11 @@ function handleLogin()
         . "&client_id=" . CLIENT_ID
         . "&scope=basic"
         . "&state=" . STATE . "'>Se connecter avec Oauth Server</a>";
+    echo "<a href=https://www.facebook.com/v2.10/dialog/oauth?response_type=code"
+        . "&client_id=" . CLIENT_FBID
+        . "&scope=basic"
+        . "&state=" . STATE
+        . "sdk='>  Se connecter avec FB</a>";// manque le sdk et require_uri ou url 
 }
 
 function handleError()
