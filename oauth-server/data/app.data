@@ -1,4 +1,1 @@
 a:6:{s:9:"client_id";s:30:"client_60a3778e70ef02.05413444";s:13:"client_secret";s:40:"cd989e9a4b572963e23fe39dc14c22bbceda0e60";s:4:"name";s:5:"Test3";s:3:"uri";s:21:"http://localhost:8082";s:16:"redirect_success";s:34:"http://localhost:8082/auth-success";s:14:"redirect_error";s:33:"http://localhost:8082/auth-cancel";}
-a:2:{s:9:"client_id";s:30:"client_60a50e0e4ffdd6.37687654";s:13:"client_secret";s:40:"a181f4ffb7f4e05fc6de2642bb73385791c6ac7e";}
-a:2:{s:9:"client_id";s:30:"client_60a50e33905ea4.07453459";s:13:"client_secret";s:40:"3b5762a361a568b55c5c298dd07db07187607b72";}
-a:2:{s:9:"client_id";s:30:"client_60a50e5ddd1268.57450919";s:13:"client_secret";s:40:"93fc3ff036b0401ef5e7dac8a5d424d4458ff7dc";}
