@@ -1,9 +1,12 @@
 <?php
 const CLIENT_ID = "client_60a3778e70ef02.05413444";
-const CLIENT_FBID = "3648086378647793";
+const CLIENT_FBID = "153042750126859";
+const CLIENT_GTID = "cd08eb1a4191742c3488";
 const CLIENT_SECRET = "cd989e9a4b572963e23fe39dc14c22bbceda0e60";
-const CLIENT_FBSECRET = "1b5d764e7a527c2b816259f575a59942";
+const CLIENT_FBSECRET = "cfd0d0117ba19c789c711b1f0afaf3c4";
+const CLIENT_GTSECRET = "72c05c3dd00e1a8cbba435a330228a617e008eb9";
 const STATE = "fdzefzefze";
+
 function handleLogin()
 {
     // http://.../auth?response_type=code&client_id=...&scope=...&state=...
@@ -11,12 +14,20 @@ function handleLogin()
     echo "<a href='http://localhost:8081/auth?response_type=code"
         . "&client_id=" . CLIENT_ID
         . "&scope=basic"
-        . "&state=" . STATE . "'>Se connecter avec Oauth Server</a>";
+        . "&state=" . STATE
+        . "'>Se connecter avec Oauth Server</a>";
     echo "<a href='https://www.facebook.com/v2.10/dialog/oauth?response_type=code"
         . "&client_id=" . CLIENT_FBID
         . "&scope=email"
         . "&state=" . STATE
-        . "&redirect_uri=https://localhost/fbauth-success'>Se connecter avec Facebook</a>";
+        . "&redirect_uri=http://localhost:8082/fbauth-success"
+        . "&sdk=php-sdk-6.0-dev'>Se connecter avec Facebook</a>";
+    echo "<a href='https://github.com/login/oauth/authorize?response_type=code"
+        . "&client_id=". CLIENT_GTID
+        . "&scope=user"
+        . "&state=". STATE
+        . "&redirect_uri=http://localhost:8082/gtauth-success"
+        . "'> Se connecter avec GitHub </a>";
 }
 
 function handleError()
@@ -41,23 +52,42 @@ function handleSuccess()
 function handleFbSuccess()
 {
     ["state" => $state, "code" => $code] = $_GET;
-    if ($state !== STATE) {
-        throw new RuntimeException("{$state} : invalid state");
-    }
+    if ($state !== STATE) throw new RuntimeException("{$state} : invalid state");
     // https://auth-server/token?grant_type=authorization_code&code=...&client_id=..&client_secret=...
-    $url = "https://graph.facebook.com/oauth/access_token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_FBID . "&client_secret=" . CLIENT_FBSECRET."&redirect_uri=https://localhost/fbauth-success";
+    $url = "https://graph.facebook.com/oauth/access_token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_FBID . "&client_secret=" . CLIENT_FBSECRET."&redirect_uri=http://localhost:8082/fbauth-success";
     $result = file_get_contents($url);
     $resultDecoded = json_decode($result, true);
     ["access_token"=> $token] = $resultDecoded;
     $userUrl = "https://graph.facebook.com/me?fields=id,name,email";
-    $context = stream_context_create([
-        'http' => [
-            'header' => 'Authorization: Bearer ' . $token
-        ]
-    ]);
-    echo file_get_contents($userUrl, false, $context);
+    $curl = curl_init($userUrl);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.3.12 (KHTML, like Gecko) Version/10.0.2 Safari/602.3.12");
+    curl_setopt($curl, CURLOPT_HTTPHEADER,["Authorization: Bearer {$token}"]);
+    curl_setopt($curl,CURLOPT_HEADER,0);
+    $result = curl_exec($curl);
+    echo $result;
+//   echo file_get_contents($userUrl, false, $context);
 }
 
+function handleGtSuccess()
+{
+    ["state" => $state, "code" => $code] = $_GET;
+    if ($state !== STATE) throw new RuntimeException("{$state} : invalid state");
+    $url = "https://github.com/login/oauth/access_token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_GTID . "&client_secret=" . CLIENT_GTSECRET . "&redirect_uri=http://localhost:8082/gtauth-success";
+    $result = file_get_contents($url);
+    $string = explode("&", $result, 2)[0];
+    $token = explode("=", $string)[1];
+    $userUrl = "https://api.github.com/user";
+    $curl = curl_init($userUrl);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.3.12 (KHTML, like Gecko) Version/10.0.2 Safari/602.3.12");
+    curl_setopt($curl, CURLOPT_HTTPHEADER,["Authorization: Bearer {$token}"]);
+    curl_setopt($curl,CURLOPT_HEADER,0);
+    $result = curl_exec($curl);
+    echo $result;
+//    echo file_get_contents($userUrl,false ,$context);
+
+}
 function getUser($params)
 {
     $url = "http://oauth-server:8081/token?client_id=" . CLIENT_ID . "&client_secret=" . CLIENT_SECRET . "&" . http_build_query($params);
@@ -91,6 +121,9 @@ switch ($route) {
         break;
     case '/fbauth-success':
         handleFbSuccess();
+        break;
+    case '/gtauth-success':
+        handleGtSuccess();
         break;
     case '/auth-cancel':
         handleError();
