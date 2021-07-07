@@ -22,4 +22,11 @@ GET http://localhost:8081/token?grant_type=client_credentials&client_id=client_6
 GET http://localhost:8081/me
 Authorization: Bearer 60a37df13c267
 
+###
 GET https://accounts.google.com/.well-known/openid-configuration
+
+###
+GET https://openidconnect.googleapis.com/v1/userinfo?fields=name,email
+
+###
+GET https://oauth2.googleapis.com/token?grant_type=authorization_code&client_id=666723567104-k4aguknbo73rlr7b12gnnin4791ssn5t.apps.googleusercontent.com&client_secret=b9BzjhKAYYmHnqA18L2RI11U&redirect_uri=https://localhost/googleauth-success&code=4/0AX4XfWgWPhq1YL4ASAqok2iX0S1OBiM5xfgYGizZ0hf1XrIVBCCAsKbtIIBg1_Q421yVdw

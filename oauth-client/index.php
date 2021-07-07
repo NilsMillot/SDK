@@ -41,7 +41,6 @@ function handleSuccess()
     if ($state !== STATE) {
         throw new RuntimeException("{$state} : invalid state");
     }
-    // https://auth-server/token?grant_type=authorization_code&code=...&client_id=..&client_secret=...
     getUser([
         'grant_type' => "authorization_code",
         "code" => $code,
@@ -54,7 +53,6 @@ function handleFbSuccess()
     if ($state !== STATE) {
         throw new RuntimeException("{$state} : invalid state");
     }
-    // https://auth-server/token?grant_type=authorization_code&code=...&client_id=..&client_secret=...
     $url = "https://graph.facebook.com/oauth/access_token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_FBID . "&client_secret=" . CLIENT_FBSECRET."&redirect_uri=https://localhost/fbauth-success";
     $result = file_get_contents($url);
     $resultDecoded = json_decode($result, true);
@@ -74,18 +72,19 @@ function handleGoogleSuccess()
     if ($state !== STATE) {
         throw new RuntimeException("{$state} : invalid state");
     }
-    // https://auth-server/token?grant_type=authorization_code&code=...&client_id=..&client_secret=...
-    $url = "https://graph.facebook.com/oauth/access_token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_FBID . "&client_secret=" . CLIENT_FBSECRET."&redirect_uri=https://localhost/fbauth-success";
+    $url = "https://oauth2.googleapis.com/token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_GOOGLEID . "&client_secret=" . CLIENT_GOOGLESECRET . "&redirect_uri=https://localhost/googleauth-success";
     $result = file_get_contents($url);
     $resultDecoded = json_decode($result, true);
     ["access_token"=> $token] = $resultDecoded;
-    $userUrl = "https://graph.facebook.com/me?fields=id,name,email";
+    $userUrl = "https://openidconnect.googleapis.com/v1/userinfo?fields=name,email";
     $context = stream_context_create([
         'http' => [
             'header' => 'Authorization: Bearer ' . $token
         ]
     ]);
     echo file_get_contents($userUrl, false, $context);
+    var_dump($result);
+    echo "  connecté via google.";
 }
 
 function getUser($params)
@@ -123,8 +122,8 @@ switch ($route) {
         handleFbSuccess();
         break;
     case '/googleauth-success':
-        // handleGoogleSuccess();
-        echo "connecté via google";
+        handleGoogleSuccess();
+        // echo "connecté via google";
         break;
     case '/auth-cancel':
         handleError();
