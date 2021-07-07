@@ -1,8 +1,10 @@
 <?php
 const CLIENT_ID = "client_60a3778e70ef02.05413444";
 const CLIENT_FBID = "3648086378647793";
+const CLIENT_GOOGLEID= "666723567104-k4aguknbo73rlr7b12gnnin4791ssn5t.apps.googleusercontent.com";
 const CLIENT_SECRET = "cd989e9a4b572963e23fe39dc14c22bbceda0e60";
 const CLIENT_FBSECRET = "1b5d764e7a527c2b816259f575a59942";
+const CLIENT_GOOGLESECRET = "b9BzjhKAYYmHnqA18L2RI11U";
 const STATE = "fdzefzefze";
 function handleLogin()
 {
@@ -12,11 +14,19 @@ function handleLogin()
         . "&client_id=" . CLIENT_ID
         . "&scope=basic"
         . "&state=" . STATE . "'>Se connecter avec Oauth Server</a>";
+    echo "<br><br>";
     echo "<a href='https://www.facebook.com/v2.10/dialog/oauth?response_type=code"
         . "&client_id=" . CLIENT_FBID
         . "&scope=email"
         . "&state=" . STATE
         . "&redirect_uri=https://localhost/fbauth-success'>Se connecter avec Facebook</a>";
+    echo "<br><br>";
+    echo "<a href='https://accounts.google.com/o/oauth2/v2/auth?response_type=code"
+    . "&access_type=online"
+    . "&client_id=" . CLIENT_GOOGLEID
+    . "&scope=email"
+    . "&state=" . STATE
+    . "&redirect_uri=https://localhost/googleauth-success'>Se connecter avec Google</a>";
 }
 
 function handleError()
@@ -39,6 +49,26 @@ function handleSuccess()
 }
 
 function handleFbSuccess()
+{
+    ["state" => $state, "code" => $code] = $_GET;
+    if ($state !== STATE) {
+        throw new RuntimeException("{$state} : invalid state");
+    }
+    // https://auth-server/token?grant_type=authorization_code&code=...&client_id=..&client_secret=...
+    $url = "https://graph.facebook.com/oauth/access_token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_FBID . "&client_secret=" . CLIENT_FBSECRET."&redirect_uri=https://localhost/fbauth-success";
+    $result = file_get_contents($url);
+    $resultDecoded = json_decode($result, true);
+    ["access_token"=> $token] = $resultDecoded;
+    $userUrl = "https://graph.facebook.com/me?fields=id,name,email";
+    $context = stream_context_create([
+        'http' => [
+            'header' => 'Authorization: Bearer ' . $token
+        ]
+    ]);
+    echo file_get_contents($userUrl, false, $context);
+}
+
+function handleGoogleSuccess()
 {
     ["state" => $state, "code" => $code] = $_GET;
     if ($state !== STATE) {
@@ -91,6 +121,10 @@ switch ($route) {
         break;
     case '/fbauth-success':
         handleFbSuccess();
+        break;
+    case '/googleauth-success':
+        // handleGoogleSuccess();
+        echo "connecté via google";
         break;
     case '/auth-cancel':
         handleError();

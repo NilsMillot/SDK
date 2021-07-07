@@ -21,3 +21,5 @@ GET http://localhost:8081/token?grant_type=client_credentials&client_id=client_6
 ###
 GET http://localhost:8081/me
 Authorization: Bearer 60a37df13c267
+
+GET https://accounts.google.com/.well-known/openid-configuration
