@@ -29,4 +29,4 @@ GET https://accounts.google.com/.well-known/openid-configuration
 GET https://openidconnect.googleapis.com/v1/userinfo?fields=name,email
 
 ###
-GET https://oauth2.googleapis.com/token?grant_type=authorization_code&client_id=666723567104-k4aguknbo73rlr7b12gnnin4791ssn5t.apps.googleusercontent.com&client_secret=b9BzjhKAYYmHnqA18L2RI11U&redirect_uri=https://localhost/googleauth-success&code=4/0AX4XfWgWPhq1YL4ASAqok2iX0S1OBiM5xfgYGizZ0hf1XrIVBCCAsKbtIIBg1_Q421yVdw
+GET https://oauth2.googleapis.com/token/?grant_type=authorization_code&client_id=666723567104-k4aguknbo73rlr7b12gnnin4791ssn5t.apps.googleusercontent.com&client_secret=b9BzjhKAYYmHnqA18L2RI11U&redirect_uri=https://localhost/googleauth-success&code=4/0AX4XfWinJa8Osk2XcVXAfS_Yvw05VMDiJrhKuXAjFuh6yt5Y-NDJp0MRxNFypIkCg0s_MA

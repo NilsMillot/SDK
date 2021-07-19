@@ -1,4 +1,8 @@
 <?php
+include 'vendor/autoload.php';
+
+use GuzzleHttp\Client;
+
 const CLIENT_ID = "client_60a3778e70ef02.05413444";
 const CLIENT_FBID = "3648086378647793";
 const CLIENT_GOOGLEID= "666723567104-k4aguknbo73rlr7b12gnnin4791ssn5t.apps.googleusercontent.com";
@@ -68,23 +72,46 @@ function handleFbSuccess()
 
 function handleGoogleSuccess()
 {
-    ["state" => $state, "code" => $code] = $_GET;
-    if ($state !== STATE) {
-        throw new RuntimeException("{$state} : invalid state");
-    }
-    $url = "https://oauth2.googleapis.com/token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_GOOGLEID . "&client_secret=" . CLIENT_GOOGLESECRET . "&redirect_uri=https://localhost/googleauth-success";
-    $result = file_get_contents($url);
-    $resultDecoded = json_decode($result, true);
-    ["access_token"=> $token] = $resultDecoded;
-    $userUrl = "https://openidconnect.googleapis.com/v1/userinfo?fields=name,email";
-    $context = stream_context_create([
-        'http' => [
-            'header' => 'Authorization: Bearer ' . $token
+    $client = new Client([
+        'timeout' => 2.0
+    ]);
+    var_dump($client);
+    // try {
+    $response = $client->request('POST', 'https://oauth2.googleapis.com/token', [
+        'form_params' => [
+            'code' => $_GET['code'],
+            'client_id' => CLIENT_GOOGLEID,
+            'client_secret' => CLIENT_GOOGLESECRET,
+            'redirect_uri' => 'https://localhost/googleauth-success',
+            'grant_type' => 'authorization_code'
         ]
     ]);
-    echo file_get_contents($userUrl, false, $context);
-    var_dump($result);
-    echo "  connecté via google.";
+    echo json_decode($response->getBody());
+    var_dump($response);
+    echo "tamer";
+    // } catch (\GuzzleHttp\Exception\ClientException $exception) {
+    //     var_dump($exception->getMessage());
+    //     die();
+    // }
+
+    // ["state" => $state, "code" => $code] = $_GET;
+    // if ($state !== STATE) {
+    //     throw new RuntimeException("{$state} : invalid state");
+    // }
+    // $url = "https://oauth2.googleapis.com/token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_GOOGLEID . "&client_secret=" . CLIENT_GOOGLESECRET . "&redirect_uri=https://localhost/googleauth-success";
+    // $result = file_get_contents($url);
+    // var_dump($result);
+    // $resultDecoded = json_decode($result, true);
+    // ["access_token"=> $token] = $resultDecoded;
+    // $userUrl = "https://openidconnect.googleapis.com/v1/userinfo?fields=name,email";
+    // $context = stream_context_create([
+    //     'http' => [
+    //         'header' => 'Authorization: Bearer ' . $token
+    //     ]
+    // ]);
+    // echo file_get_contents($userUrl, false, $context);
+    // echo $code;
+    // echo "  connecté via google.";
 }
 
 function getUser($params)
