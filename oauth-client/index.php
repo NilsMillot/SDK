@@ -8,6 +8,9 @@ const CLIENT_FBSECRET = "cfd0d0117ba19c789c711b1f0afaf3c4";
 const CLIENT_GTSECRET = "72c05c3dd00e1a8cbba435a330228a617e008eb9";
 const CLIENT_GOOGLEID = "1086263128848-hd7hr0j46vmfled59k7pib2l7ueicrat.apps.googleusercontent.com";
 const CLIENT_GOOGLESECRET = "JOCm3dScQn5x4xlU_Ybo99Oo";
+const CLIENT_DISCORD_ID = "866623043559751720";
+const CLIENT_DISCORD_SECRET = "olGHze-0iWhXltjLbpnqmoPVtgRjCrx_";
+
 
 // CLE Nils :
 // const CLIENT_FBID = "3648086378647793";
@@ -46,6 +49,13 @@ function handleLogin()
     . "&scope=email"
     // . "&state=" . STATE
     . "&redirect_uri=http://localhost:8082/googleauth-success'>Se connecter avec Google</a>";
+    echo "<br><br>";
+    echo "<a href='https://discord.com/api/oauth2/authorize?response_type=code"
+    . "&client_id=" . CLIENT_DISCORD_ID
+    . "&scope=email"
+    // . "&state=" . STATE
+    . "&redirect_uri=http://localhost:8082/discordauth-success"
+    . "'>Se connecter avec Discord</a>";
 }
 
 function handleError()
@@ -143,6 +153,29 @@ function handleGoogleSuccess()
     // echo file_get_contents($userUrl, false, $context);
 }
 
+function handleDiscordSuccess()
+{
+    ["code" => $code] = $_GET;
+    echo $code;
+    
+    // if ($state !== STATE) throw new RuntimeException("{$state} : invalid state");
+    $url = "https://discord.com/api/oauth2/authorize?grant_type=authorization_code&code=${code}&client_id=" . CLIENT_DISCORD_ID . "&client_secret=" . CLIENT_DISCORD_SECRET . "&redirect_uri=discordauth-success";
+    // "&client_secret=" . CLIENT_DISCORD_SECRET . "&redirect_uri=discordauth-success";
+    $result = file_get_contents($url);
+
+    // $string = explode("&", $result, 2)[0];
+    // $token = explode("=", $string)[1];
+    // $userUrl = "https://api.github.com/user";
+    // $curl = curl_init($userUrl);
+    // curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    // curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.3.12 (KHTML, like Gecko) Version/10.0.2 Safari/602.3.12");
+    // curl_setopt($curl, CURLOPT_HTTPHEADER,["Authorization: Bearer {$token}"]);
+    // curl_setopt($curl,CURLOPT_HEADER,0);
+    // $result = curl_exec($curl);
+    echo $result;
+    //   echo file_get_contents($userUrl,false ,$context);
+}
+
 function getUser($params)
 {
     $url = "http://oauth-server:8081/token?client_id=" . CLIENT_ID . "&client_secret=" . CLIENT_SECRET . "&" . http_build_query($params);
@@ -183,6 +216,10 @@ switch ($route) {
     case '/googleauth-success':
         handleGoogleSuccess();
         echo "<br><br> Connecté via google";
+        break;
+    case '/discordauth-success':
+        handleDiscordSuccess();
+        echo "<br><br> Connecté via discord";
         break;
     case '/auth-cancel':
         handleError();
