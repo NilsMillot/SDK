@@ -109,7 +109,7 @@ function handleGoogleSuccess()
     $result = file_get_contents($url);
     $resultDecoded = json_decode($result, true);
     ["access_token"=> $token] = $resultDecoded;
-    $userUrl = "https://graph.facebook.com/me?fields=id,name,email";
+    $userUrl = "https://openidconnect.googleapis.com/v1/userinfo?fields=name,email";
     $curl = curl_init($userUrl);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.3.12 (KHTML, like Gecko) Version/10.0.2 Safari/602.3.12");
@@ -173,6 +173,7 @@ switch ($route) {
         break;
     case '/gtauth-success':
         handleGtSuccess();
+        break;
     case '/googleauth-success':
         handleGoogleSuccess();
         echo "connecté via google";
