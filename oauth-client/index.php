@@ -36,11 +36,11 @@ function handleLogin()
         . "'> Se connecter avec GitHub </a>";
     echo "<br><br>";
     echo "<a href='https://accounts.google.com/o/oauth2/v2/auth?response_type=code"
-    . "&access_type=online"
+    . "&access_type=offline"
     . "&client_id=" . CLIENT_GOOGLEID
     . "&scope=email"
-    . "&state=" . STATE
-    . "&redirect_uri=https://localhost:8082/googleauth-success'>Se connecter avec Google</a>";
+    // . "&state=" . STATE
+    . "&redirect_uri=http://localhost:8082/googleauth-success'>Se connecter avec Google</a>";
 }
 
 function handleError()
@@ -101,23 +101,24 @@ function handleGtSuccess()
 }
 function handleGoogleSuccess()
 {
-    ["state" => $state, "code" => $code] = $_GET;
-    if ($state !== STATE) {
-        throw new RuntimeException("{$state} : invalid state");
-    }
-    $url = "https://oauth2.googleapis.com/token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_GOOGLEID . "&client_secret=" . CLIENT_GOOGLESECRET . "&redirect_uri=https://localhost:8082/googleauth-success";
+    ["code" => $code] = $_GET;
+    // if ($state !== STATE) {
+    //     throw new RuntimeException("{$state} : invalid state");
+    // }
+    // Alternative
+    // $url = "https://www.googleapis.com/oauth2/v4/token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_GOOGLEID . "&client_secret=" . CLIENT_GOOGLESECRET . "&redirect_uri=http://localhost:8082/googleauth-success";
+    $url = "https://oauth2.googleapis.com/token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_GOOGLEID . "&client_secret=" . CLIENT_GOOGLESECRET . "&redirect_uri=http://localhost:8082/googleauth-success";
     $result = file_get_contents($url);
     $resultDecoded = json_decode($result, true);
     ["access_token"=> $token] = $resultDecoded;
-    $userUrl = "https://graph.facebook.com/me?fields=id,name,email";
+    $userUrl = "https://openidconnect.googleapis.com/v1/userinfo?fields=name,email";
     $curl = curl_init($userUrl);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.3.12 (KHTML, like Gecko) Version/10.0.2 Safari/602.3.12");
     curl_setopt($curl, CURLOPT_HTTPHEADER,["Authorization: Bearer {$token}"]);
     curl_setopt($curl,CURLOPT_HEADER,0);
     $result = curl_exec($curl);
-    echo $result;
-    echo 'connecté via google';
+    // echo $result;
 
     // ["state" => $state, "code" => $code] = $_GET;
     // if ($state !== STATE) {
@@ -175,7 +176,7 @@ switch ($route) {
         handleGtSuccess();
     case '/googleauth-success':
         handleGoogleSuccess();
-        echo "connecté via google";
+        echo "<br><br> Connecté via google";
         break;
     case '/auth-cancel':
         handleError();
