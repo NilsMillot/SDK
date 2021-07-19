@@ -6,11 +6,15 @@ const CLIENT_GTID = "cd08eb1a4191742c3488";
 const CLIENT_SECRET = "cd989e9a4b572963e23fe39dc14c22bbceda0e60";
 const CLIENT_FBSECRET = "cfd0d0117ba19c789c711b1f0afaf3c4";
 const CLIENT_GTSECRET = "72c05c3dd00e1a8cbba435a330228a617e008eb9";
+const CLIENT_GOOGLEID = "1086263128848-hd7hr0j46vmfled59k7pib2l7ueicrat.apps.googleusercontent.com";
+const CLIENT_GOOGLESECRET = "JOCm3dScQn5x4xlU_Ybo99Oo";
 
+// CLE Nils :
 // const CLIENT_FBID = "3648086378647793";
-const CLIENT_GOOGLEID= "666723567104-k4aguknbo73rlr7b12gnnin4791ssn5t.apps.googleusercontent.com";
+//const CLIENT_GOOGLEID= "666723567104-k4aguknbo73rlr7b12gnnin4791ssn5t.apps.googleusercontent.com";
 // const CLIENT_FBSECRET = "1b5d764e7a527c2b816259f575a59942";
-const CLIENT_GOOGLESECRET = "b9BzjhKAYYmHnqA18L2RI11U";
+//const CLIENT_GOOGLESECRET = "b9BzjhKAYYmHnqA18L2RI11U";
+
 const STATE = "fdzefzefze";
 
 function handleLogin()
@@ -28,6 +32,7 @@ function handleLogin()
         . "&state=" . STATE
         . "&redirect_uri=http://localhost:8082/fbauth-success"
         . "&sdk=php-sdk-6.0-dev'>Se connecter avec Facebook</a>";
+    echo "<br><br>";
     echo "<a href='https://github.com/login/oauth/authorize?response_type=code"
         . "&client_id=". CLIENT_GTID
         . "&scope=user"
@@ -174,6 +179,7 @@ switch ($route) {
         break;
     case '/gtauth-success':
         handleGtSuccess();
+        break;
     case '/googleauth-success':
         handleGoogleSuccess();
         echo "<br><br> Connecté via google";
