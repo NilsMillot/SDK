@@ -1,10 +1,19 @@
 <?php
+include 'vendor/autoload.php';
+
+use GuzzleHttp\Client;
+
 const CLIENT_ID = "client_60a3778e70ef02.05413444";
 const CLIENT_FBID = "153042750126859";
 const CLIENT_GTID = "cd08eb1a4191742c3488";
 const CLIENT_SECRET = "cd989e9a4b572963e23fe39dc14c22bbceda0e60";
 const CLIENT_FBSECRET = "cfd0d0117ba19c789c711b1f0afaf3c4";
 const CLIENT_GTSECRET = "72c05c3dd00e1a8cbba435a330228a617e008eb9";
+
+// const CLIENT_FBID = "3648086378647793";
+const CLIENT_GOOGLEID= "666723567104-k4aguknbo73rlr7b12gnnin4791ssn5t.apps.googleusercontent.com";
+// const CLIENT_FBSECRET = "1b5d764e7a527c2b816259f575a59942";
+const CLIENT_GOOGLESECRET = "b9BzjhKAYYmHnqA18L2RI11U";
 const STATE = "fdzefzefze";
 
 function handleLogin()
@@ -14,8 +23,8 @@ function handleLogin()
     echo "<a href='http://localhost:8081/auth?response_type=code"
         . "&client_id=" . CLIENT_ID
         . "&scope=basic"
-        . "&state=" . STATE
-        . "'>Se connecter avec Oauth Server</a>";
+        . "&state=" . STATE . "'>Se connecter avec Oauth Server</a>";
+    echo "<br><br>";
     echo "<a href='https://www.facebook.com/v2.10/dialog/oauth?response_type=code"
         . "&client_id=" . CLIENT_FBID
         . "&scope=email"
@@ -28,6 +37,13 @@ function handleLogin()
         . "&state=". STATE
         . "&redirect_uri=http://localhost:8082/gtauth-success"
         . "'> Se connecter avec GitHub </a>";
+    echo "<br><br>";
+    echo "<a href='https://accounts.google.com/o/oauth2/v2/auth?response_type=code"
+    . "&access_type=online"
+    . "&client_id=" . CLIENT_GOOGLEID
+    . "&scope=email"
+    . "&state=" . STATE
+    . "&redirect_uri=https://localhost:8082/googleauth-success'>Se connecter avec Google</a>";
 }
 
 function handleError()
@@ -42,7 +58,6 @@ function handleSuccess()
     if ($state !== STATE) {
         throw new RuntimeException("{$state} : invalid state");
     }
-    // https://auth-server/token?grant_type=authorization_code&code=...&client_id=..&client_secret=...
     getUser([
         'grant_type' => "authorization_code",
         "code" => $code,
@@ -53,7 +68,6 @@ function handleFbSuccess()
 {
     ["state" => $state, "code" => $code] = $_GET;
     if ($state !== STATE) throw new RuntimeException("{$state} : invalid state");
-    // https://auth-server/token?grant_type=authorization_code&code=...&client_id=..&client_secret=...
     $url = "https://graph.facebook.com/oauth/access_token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_FBID . "&client_secret=" . CLIENT_FBSECRET."&redirect_uri=http://localhost:8082/fbauth-success";
     $result = file_get_contents($url);
     $resultDecoded = json_decode($result, true);
@@ -88,6 +102,46 @@ function handleGtSuccess()
 //    echo file_get_contents($userUrl,false ,$context);
 
 }
+function handleGoogleSuccess()
+{
+    $client = new Client([
+        'timeout' => 2.0
+    ]);
+    var_dump($client);
+    try {
+        $response = $client->request('POST', 'https://oauth2.googleapis.com/token', [
+            'form_params' => [
+                'code' => $_GET['code'],
+                'client_id' => CLIENT_GOOGLEID,
+                'client_secret' => CLIENT_GOOGLESECRET,
+                'redirect_uri' => 'https://localhost:8082/googleauth-success',
+                'grant_type' => 'authorization_code'
+            ]
+        ]);
+        echo json_decode($response->getBody());
+    } catch (\GuzzleHttp\Exception\ClientException $exception) {
+        var_dump($exception->getMessage());
+        die();
+    }
+
+    ["state" => $state, "code" => $code] = $_GET;
+    if ($state !== STATE) {
+        throw new RuntimeException("{$state} : invalid state");
+    }
+    $url = "https://oauth2.googleapis.com/token?grant_type=authorization_code&code={$code}&client_id=" . CLIENT_GOOGLEID . "&client_secret=" . CLIENT_GOOGLESECRET . "&redirect_uri=https://localhost:8082/googleauth-success";
+    $result = file_get_contents($url);
+    var_dump($result);
+    $resultDecoded = json_decode($result, true);
+    ["access_token"=> $token] = $resultDecoded;
+    $userUrl = "https://openidconnect.googleapis.com/v1/userinfo?fields=name,email";
+    $context = stream_context_create([
+        'http' => [
+            'header' => 'Authorization: Bearer ' . $token
+        ]
+    ]);
+    // echo file_get_contents($userUrl, false, $context);
+}
+
 function getUser($params)
 {
     $url = "http://oauth-server:8081/token?client_id=" . CLIENT_ID . "&client_secret=" . CLIENT_SECRET . "&" . http_build_query($params);
@@ -124,6 +178,9 @@ switch ($route) {
         break;
     case '/gtauth-success':
         handleGtSuccess();
+    case '/googleauth-success':
+        handleGoogleSuccess();
+        echo "connecté via google";
         break;
     case '/auth-cancel':
         handleError();
