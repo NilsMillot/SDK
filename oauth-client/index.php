@@ -129,11 +129,10 @@ function handleGoogleSuccess()
     );
     $context = stream_context_create($opts);
     $result = file_get_contents('https://oauth2.googleapis.com/token', false, $context);
-    echo $result;
     $resultDecoded = json_decode($result);
 
     $token = $resultDecoded->{'access_token'};
-    $userUrl = "https://openidconnect.googleapis.com/v1/userinfo?fields=name,email";
+    $userUrl = "https://openidconnect.googleapis.com/v1/userinfo";
     $context = stream_context_create([
         'http' => [
             'header' => 'Authorization: Bearer ' . $token
